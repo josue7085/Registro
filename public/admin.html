@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador | inter-Flash</title>
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+    <!-- Menú lateral hamburguesa -->
+    <nav id="sidebar" class="sidebar closed">
+        <div class="sidebar-header">
+            <span class="menu-toggle" id="menu-toggle-sidebar"><i class="fa-solid fa-bars"></i></span>
+            <span class="sidebar-title">inter-Flash</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><i class="fa-solid fa-house"></i> Inicio</li>
+            <li id="clientes-menu"><i class="fa-solid fa-users"></i> Clientes</li>
+            <li><i class="fa-solid fa-network-wired"></i> Planes de Servicio</li>
+            <li><i class="fa-solid fa-file-invoice"></i> Recibos</li>
+            <li><i class="fa-solid fa-money-check-dollar"></i> Pagos</li>
+            <li><i class="fa-solid fa-bell"></i> Notificaciones</li>
+            <li><i class="fa-solid fa-comments"></i> Chat</li>
+            <li class="sidebar-logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</li>
+        </ul>
+    </nav>
+    <!-- Contenido principal -->
+    <div class="admin-main">
+        <header class="admin-header">
+            <span class="menu-toggle" id="menu-toggle-header"><i class="fa-solid fa-bars"></i></span>
+            <h1>Panel de Administración</h1>
+        </header>
+        <section class="admin-dashboard">
+            <div class="dashboard-cards">
+                <div class="dashboard-card">
+                    <h3>Clientes Activos</h3>
+                    <div class="dashboard-value" id="clientes-activos">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Clientes Suspendidos</h3>
+                    <div class="dashboard-value" id="clientes-suspendidos">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Pagos por Verificar</h3>
+                    <div class="dashboard-value" id="pagos-verificar">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Dinero Recolectado</h3>
+                    <div class="dashboard-value">
+                        <span id="dinero-usd">$0</span> / <span id="dinero-bs">Bs. 0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard-graphs">
+                <canvas id="grafica-clientes" height="180"></canvas>
+                <canvas id="grafica-pagos" height="180"></canvas>
+            </div>
+            <div id="panel-clientes" style="display:none; margin-top:32px;">
+                <h2>Panel de Clientes</h2>
+                <div class="clientes-busqueda" style="margin-bottom:18px;">
+                    <input type="text" id="busqueda-clientes" placeholder="Buscar por nombre, cédula o IP..." style="width: 60%; padding: 8px 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.18); color: #222; font-size: 1em; box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08); outline: none; transition: box-shadow 0.2s, border 0.2s; backdrop-filter: blur(6px);">
+                </div>
+                <table class="tabla-clientes">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Cédula</th>
+                            <th>IP Asignada</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-clientes-body">
+                        <!-- Aquí se insertarán las filas dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="panel-planes" style="display:none; margin-top:32px;">
+                <h2>Planes de Servicio</h2>
+                <button id="btn-nuevo-plan" class="btn-guardar" style="margin-bottom:18px;">Añadir nuevo plan</button>
+                <table class="tabla-clientes">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Velocidad</th>
+                            <th>Precio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-planes-body">
+                        <!-- Aquí se insertarán las filas dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="panel-recibos" style="display:none; margin-top:32px;">
+                <h2>Recibos</h2>
+                <div class="empresa-info-box">
+                    <h3>Información de la Empresa</h3>
+                    <form id="form-empresa-info">
+                        <label>Nombre: <input type="text" name="nombre" required></label>
+                        <label>RIF: <input type="text" name="rif" required></label>
+                        <label>Dirección: <input type="text" name="direccion" required></label>
+                        <label>Teléfono: <input type="text" name="telefono" required></label>
+                        <label>Email: <input type="email" name="email"></label>
+                        <button type="submit" class="btn-guardar" style="margin-top:8px;">Guardar</button>
+                    </form>
+                </div>
+                <button id="btn-nuevo-recibo" class="btn-guardar" style="margin-bottom:18px;">Añadir nuevo recibo</button>
+                <table class="tabla-clientes">
+                    <thead>
+                        <tr>
+                            <th>N° Recibo</th>
+                            <th>Cliente</th>
+                            <th>Plan</th>
+                            <th>Monto</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-recibos-body">
+                        <!-- Aquí se insertarán las filas dinámicamente -->
+                    </tbody>
+                </table>
+                <!-- Modal de edición y previsualización -->
+                <div id="modal-recibo" class="modal-cliente" style="display:none;">
+                    <div class="modal-content" id="modal-content-recibo"></div>
+                </div>
+            </div>
+            <div id="panel-pagos" style="display:none; margin-top:32px;">
+                <h2>Pagos</h2>
+                <button id="btn-nuevo-pago" class="btn-guardar" style="margin-bottom:18px;">Añadir nuevo pago</button>
+                <table class="tabla-clientes">
+                    <thead>
+                        <tr>
+                            <th>N° Pago</th>
+                            <th>Cliente</th>
+                            <th>Monto</th>
+                            <th>Fecha</th>
+                            <th>Método</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-pagos-body">
+                        <!-- Aquí se insertarán las filas dinámicamente -->
+                    </tbody>
+                </table>
+                <h3 style="margin-top:32px;">Historial de Pagos Verificados</h3>
+                <table class="tabla-clientes">
+                    <thead>
+                        <tr>
+                            <th>N° Pago</th>
+                            <th>Cliente</th>
+                            <th>Monto</th>
+                            <th>Fecha</th>
+                            <th>Método</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-historial-pagos-body">
+                        <!-- Aquí se insertarán las filas dinámicamente -->
+                    </tbody>
+                </table>
+                <!-- Modal de edición y detalle -->
+                <div id="modal-pago" class="modal-cliente" style="display:none;">
+                    <div class="modal-content" id="modal-content-pago"></div>
+                </div>
+            </div>
+            <div id="panel-notificaciones" style="display:none; margin-top:32px;">
+                <h2>Notificaciones</h2>
+                <button id="btn-nueva-notificacion" class="btn-guardar" style="margin-bottom:18px;">Añadir notificación</button>
+                <table class="tabla-clientes">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Mensaje</th>
+                            <th>Fecha</th>
+                            <th>Destinatario</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-notificaciones-body">
+                        <!-- Aquí se insertarán las filas dinámicamente -->
+                    </tbody>
+                </table>
+                <!-- Modal de edición y detalle -->
+                <div id="modal-notificacion" class="modal-cliente" style="display:none;">
+                    <div class="modal-content" id="modal-content-notificacion"></div>
+                </div>
+            </div>
+            <div id="panel-chat" style="display:none; margin-top:32px; max-width:600px;">
+                <h2>Chat</h2>
+                <div class="chat-box">
+                    <label for="chat-cliente-select" style="font-weight:600; margin-bottom:6px;">Selecciona un cliente para responder:</label>
+                    <select id="chat-cliente-select" style="margin-bottom:10px; width:100%; padding:7px 10px; border-radius:7px; border:1px solid #b0bec5; font-size:1em;"></select>
+                    <div id="chat-mensajes" class="chat-mensajes"></div>
+                    <form id="form-chat" class="chat-form">
+                        <input type="text" id="input-chat" placeholder="Escribe una respuesta..." autocomplete="off" required>
+                        <button type="submit" class="btn-guardar">Enviar</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script src="datos.js"></script>
+    <script src="clientes.js"></script>
+    <script src="planes.js"></script>
+    <script src="recibos.js"></script>
+    <script src="pagos.js"></script>
+    <script src="notificaciones.js"></script>
+    <script src="chat.js"></script>
+    <script src="admin.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>
