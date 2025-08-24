@@ -1,0 +1,247 @@
+/* WIFI-FLASH-REGISTRO/style.css */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-image: url('background.jpg'); /* Asegúrate de tener background.jpg en la misma carpeta */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    background-color: rgba(255, 255, 255, 0.92); /* Fondo semi-transparente */
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.25);
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+}
+
+#logo {
+    max-width: 150px;
+    margin-bottom: 20px;
+}
+
+h1 {
+    color: #0056b3; /* Un color azul, ajústalo a tu marca */
+    margin-bottom: 25px;
+    font-size: 1.8em;
+}
+
+.form-group {
+    margin-bottom: 18px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+    font-size: 0.95em;
+}
+
+.form-group input {
+    width: calc(100% - 22px); /* Ajuste para padding y borde */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1em;
+}
+
+.form-group small {
+    font-size: 0.8em;
+    color: #666;
+    display: block;
+    margin-top: 4px;
+}
+
+#password-strength {
+    margin-top: 5px;
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    margin-top: 10px;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+button:not(:disabled):hover {
+    background-color: #0056b3;
+}
+
+.error-message {
+    color: red;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.admin-link {
+    display: block;
+    margin-top: 25px;
+    color: #007bff;
+    text-decoration: none;
+    font-size: 0.9em;
+}
+
+.admin-link:hover {
+    text-decoration: underline;
+}
+
+/* Estilos para la tabla del admin */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 0.9em;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+th {
+    background-color: #f0f0f0;
+    color: #333;
+    font-weight: bold;
+}
+td {
+    background-color: #fff;
+}
+tr:nth-child(even) td {
+    background-color: #f9f9f9;
+}
+
+.logout-button {
+    background-color: #dc3545;
+    margin-top: 20px;
+    margin-left: 10px; /* Espacio si hay otro botón al lado */
+}
+.logout-button:hover {
+    background-color: #c82333;
+}
+
+#btnDescargarExcel {
+    background-color: #28a745; /* Verde */
+}
+#btnDescargarExcel:hover {
+    background-color: #218838;
+}
+
+/* Estilos para el Modal de Factura */
+.modal {
+    display: none; /* Oculto por defecto */
+    position: fixed; /* Quedarse en su sitio */
+    z-index: 1000; /* Estar por encima de todo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Habilitar scroll si es necesario */
+    background-color: rgba(0,0,0,0.6); /* Fondo oscuro semi-transparente */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto; /* 10% desde arriba y centrado */
+    padding: 25px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 550px; /* Ancho máximo */
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-content .form-group {
+    margin-bottom: 20px;
+}
+
+.modal-content .form-group label {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.modal-content .form-group input[type="number"],
+.modal-content .form-group select,
+.modal-content .form-group input[type="month"] { /* Añadido para el input de mes */
+    width: calc(100% - 22px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.modal-content button {
+    width: auto;
+    padding: 10px 20px;
+    margin-right: 10px;
+}
+
+.btn-generar-factura {
+    background-color: #17a2b8; /* Color cian para el botón */
+    color: white;
+    padding: 6px 10px;
+    font-size: 0.85em;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.btn-generar-factura:hover {
+    background-color: #138496;
+}
+
+#datosClienteFactura {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-left: 3px solid #007bff;
+    font-size: 0.9em;
+}

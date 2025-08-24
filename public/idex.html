@@ -1,0 +1,73 @@
+<!-- WIFI-FLASH-REGISTRO/index.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Clientes - WIFI-FLASH</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="logo.png" alt="Logo WIFI-FLASH" id="logo"> <!-- Asegúrate de tener logo.png -->
+            <h1>Registro de Clientes WIFI-FLASH</h1>
+        </header>
+
+        <form id="registroForm">
+            <div class="form-group">
+                <label for="nombres">Nombres:</label>
+                <input type="text" id="nombres" name="nombres" required>
+            </div>
+
+            <div class="form-group">
+                <label for="apellidos">Apellidos:</label>
+                <input type="text" id="apellidos" name="apellidos" required>
+            </div>
+
+            <div class="form-group">
+                <label for="cedula">Cédula:</label>
+                <input type="text" id="cedula" name="cedula" required>
+            </div>
+
+            <div class="form-group">
+                <label for="telefono">Teléfono:</label>
+                <input type="tel" id="telefono" name="telefono" required>
+            </div>
+
+            <div class="form-group">
+                <label for="correo">Correo Electrónico:</label>
+                <input type="email" id="correo" name="correo" required>
+            </div>
+
+            <div class="form-group">
+                <label for="contrasena">Contraseña:</label>
+                <input type="password" id="contrasena" name="contrasena" required>
+                <small>Mínimo 8 caracteres, 1 mayúscula, 1 número, 1 carácter especial.</small>
+                <div id="password-strength"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="verificarContrasena">Verificar Contraseña:</label>
+                <input type="password" id="verificarContrasena" name="verificarContrasena" required>
+            </div>
+
+            <button type="submit" id="btnRegistrar" disabled>Registrar Datos</button>
+        </form>
+
+        <div id="mensajeError" class="error-message"></div>
+
+        <footer>
+            <a href="admin_login.html" class="admin-link">Acceso para Administradores</a>
+        </footer>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script src="firebase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
