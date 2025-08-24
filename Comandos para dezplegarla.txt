@@ -1,0 +1,12 @@
+A partir de ahora, tu forma de trabajar será mucho más sencilla. Ya no necesitarás ejecutar firebase deploy manualmente. Tu nuevo proceso de desarrollo es así:
+
+Haz los cambios que quieras en tu código (en script.js, style.css, etc.) en tu computadora.
+
+Abre la terminal y ejecuta estos tres comandos para guardar y subir tus cambios:
+
+Bash
+
+git add .
+git commit -m "Descripción de los cambios que hiciste"
+git push
+¡Eso es todo! Cada vez que ejecutes git push, GitHub se encargará de subir los cambios y de desplegar tu aplicación.

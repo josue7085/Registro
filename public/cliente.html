@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Cliente | inter-Flash</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+        <!-- Bandeja de chat (fuera del container) -->
+        <div id="bandeja-chat" class="bandeja-notif" style="display:none;">
+            <div class="bandeja-header">
+                <span>Chat con administración</span>
+                <span id="cerrar-bandeja-chat" class="close-bandeja">&times;</span>
+            </div>
+            <ul id="lista-bandeja-chat" style="list-style:none;margin:0;padding:10px 18px 0 18px;max-height:260px;overflow-y:auto;"></ul>
+            <div id="sin-bandeja-chat" style="text-align:center;opacity:0.7;display:none;">No tienes mensajes nuevos.</div>
+            <form id="form-chat" style="display:flex;gap:8px;padding:10px 18px 10px 18px;">
+                <input type="text" id="input-chat" placeholder="Escribe un mensaje..." maxlength="200" style="flex:1;padding:6px 10px;border-radius:8px;border:1px solid #b0bec5;">
+                <button type="submit" class="btn-glass" style="padding:6px 16px;">Enviar</button>
+            </form>
+        </div>
+        <!-- Modal para corregir pago rechazado -->
+        <div id="modal-correccion" class="modal-glass" style="display:none;">
+            <div class="modal-content">
+                <span id="cerrar-modal-correccion" class="close-modal">&times;</span>
+                <h3>Corregir pago rechazado</h3>
+                <form id="form-correccion-pago">
+                    <div class="form-group">
+                        <label for="corregir-referencia">Nueva referencia</label>
+                        <input type="text" id="corregir-referencia" maxlength="20" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="corregir-comprobante">Adjuntar comprobante (opcional)</label>
+                        <input type="file" id="corregir-comprobante" accept="image/*,application/pdf">
+                    </div>
+                    <div class="form-group">
+                        <label for="corregir-nota">Nota para el administrador (opcional)</label>
+                        <textarea id="corregir-nota" rows="2" maxlength="120" placeholder="Agrega una nota si lo deseas..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-glass">Enviar corrección</button>
+                </form>
+            </div>
+        </div>
+        <div class="container" style="max-width: 500px;">
+            <div id="iconos-estado"></div>
+        <!-- Bandeja de notificaciones -->
+        <div id="bandeja-notificaciones" class="bandeja-notif" style="display:none;">
+            <div class="bandeja-header">
+                <span>Notificaciones</span>
+                <span id="cerrar-bandeja-notif" class="close-bandeja">&times;</span>
+            </div>
+            <ul id="lista-bandeja-notif">
+                <!-- Notificaciones se insertan por JS -->
+            </ul>
+            <div id="sin-bandeja-notif" style="text-align:center;opacity:0.7;display:none;">No tienes notificaciones nuevas.</div>
+        </div>
+        <img src="logo.png" alt="Logo inter-Flash" class="logo">
+        <h1 class="company-name">inter-Flash</h1>
+        <h2 id="bienvenida-cliente">¡Hola, <span id="nombre-cliente">Cliente</span>!</h2>
+        <div class="cliente-info">
+            <p class="estado-servicio-row"><b>Estado del servicio:</b> <span id="estado-servicio" class="badge badge-activo">Activo</span></p>
+            <p><b>Fecha de vencimiento:</b> <span id="fecha-vencimiento">--/--/----</span></p>
+            <p><b>Plan contratado:</b> <span id="plan-servicio">---</span></p>
+            <p><b>Precio del plan:</b> <span id="precio-plan">$ -- / Bs. --</span></p>
+            <p><b>Ciudad:</b> <span id="ciudad-cliente">---</span></p>
+            <p><b>Dirección:</b> <span id="direccion-cliente">---</span></p>
+        </div>
+        <hr style="margin:18px 0;opacity:0.2;">
+        <h3>Historial de Pagos</h3>
+        <div id="historial-pagos" class="pagos-lista">
+            <p style="opacity:0.7;">No hay pagos registrados.</p>
+        </div>
+        <button id="btn-nuevo-pago" style="margin-top:18px;">Registrar nuevo pago</button>
+        <!-- Modal para registrar nuevo pago -->
+        <div id="modal-nuevo-pago" class="modal-glass" style="display:none;">
+            <div class="modal-content">
+                <span id="cerrar-modal-nuevo-pago" class="close-modal">&times;</span>
+                <h3>Registrar nuevo pago</h3>
+                <form id="form-nuevo-pago">
+                    <div class="form-group">
+                        <label for="nuevo-metodo">Método de pago</label>
+                        <select id="nuevo-metodo" required>
+                            <option value="">Seleccione...</option>
+                            <option value="pago-movil">Pago Móvil</option>
+                            <option value="transferencia">Transferencia</option>
+                            <option value="efectivo">Efectivo</option>
+                        </select>
+                    </div>
+                    <div id="campos-pago-movil" class="campos-metodo" style="display:none;">
+                        <div class="form-group">
+                            <label for="pm-referencia">N° Referencia</label>
+                            <input type="text" id="pm-referencia" maxlength="20" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="pm-telefono">Teléfono emisor</label>
+                            <input type="text" id="pm-telefono" maxlength="15" required autocomplete="off" placeholder="Ej: 04141234567">
+                        </div>
+                        <div class="form-group">
+                            <label for="pm-cedula">Cédula emisor</label>
+                            <div style="display:flex;gap:6px;">
+                                <select id="pm-tipo-cedula" required style="width:60px;">
+                                    <option value="V">V</option>
+                                    <option value="E">E</option>
+                                    <option value="P">P</option>
+                                </select>
+                                <input type="text" id="pm-cedula" maxlength="10" required autocomplete="off" placeholder="12345678" style="flex:1;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="pm-banco">Banco emisor</label>
+                            <select id="pm-banco" required>
+                                <option value="">Seleccione banco</option>
+                                <option value="0102">Banco de Venezuela</option>
+                                <option value="0104">Venezolano de Crédito</option>
+                                <option value="0105">Banco Mercantil</option>
+                                <option value="0108">Banco Provincial</option>
+                                <option value="0114">Bancaribe</option>
+                                <option value="0115">Banco Exterior</option>
+                                <option value="0116">Banco Occidental de Descuento (BOD)</option>
+                                <option value="0128">Banco Caroní</option>
+                                <option value="0134">Banesco</option>
+                                <option value="0137">Sofitasa</option>
+                                <option value="0138">Banco Plaza</option>
+                                <option value="0146">Banco de la Gente Emprendedora</option>
+                                <option value="0149">Banco del Tesoro</option>
+                                <option value="0151">BFC Banco Fondo Común</option>
+                                <option value="0156">100% Banco</option>
+                                <option value="0157">DelSur</option>
+                                <option value="0163">Banco del Orinoco</option>
+                                <option value="0166">Banco Agrícola de Venezuela</option>
+                                <option value="0168">Bancrecer</option>
+                                <option value="0169">Mi Banco</option>
+                                <option value="0171">Banco Activo</option>
+                                <option value="0172">Bancamiga</option>
+                                <option value="0174">Banplus</option>
+                                <option value="0175">Banco Bicentenario</option>
+                                <option value="0177">Banco de la Fuerza Armada (BANFANB)</option>
+                                <option value="0191">Banco Nacional de Crédito (BNC)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="pm-monto">Monto exacto (Bs.)</label>
+                            <input type="number" id="pm-monto" min="1" step="0.01" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="pm-fecha">Fecha</label>
+                            <input type="date" id="pm-fecha" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pm-comprobante">Adjuntar comprobante</label>
+                            <input type="file" id="pm-comprobante" accept="image/*,application/pdf" required>
+                        </div>
+                    </div>
+                    <div id="campos-transferencia" class="campos-metodo" style="display:none;">
+                        <div class="form-group">
+                            <label for="tr-referencia">N° Referencia</label>
+                            <input type="text" id="tr-referencia" maxlength="20" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="tr-cedula">Cédula emisor</label>
+                            <div style="display:flex;gap:6px;">
+                                <select id="tr-tipo-cedula" required style="width:60px;">
+                                    <option value="V">V</option>
+                                    <option value="E">E</option>
+                                    <option value="P">P</option>
+                                </select>
+                                <input type="text" id="tr-cedula" maxlength="10" required autocomplete="off" placeholder="12345678" style="flex:1;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tr-banco">Banco emisor</label>
+                            <select id="tr-banco" required>
+                                <option value="">Seleccione banco</option>
+                                <option value="0102">Banco de Venezuela</option>
+                                <option value="0104">Venezolano de Crédito</option>
+                                <option value="0105">Banco Mercantil</option>
+                                <option value="0108">Banco Provincial</option>
+                                <option value="0114">Bancaribe</option>
+                                <option value="0115">Banco Exterior</option>
+                                <option value="0116">Banco Occidental de Descuento (BOD)</option>
+                                <option value="0128">Banco Caroní</option>
+                                <option value="0134">Banesco</option>
+                                <option value="0137">Sofitasa</option>
+                                <option value="0138">Banco Plaza</option>
+                                <option value="0146">Banco de la Gente Emprendedora</option>
+                                <option value="0149">Banco del Tesoro</option>
+                                <option value="0151">BFC Banco Fondo Común</option>
+                                <option value="0156">100% Banco</option>
+                                <option value="0157">DelSur</option>
+                                <option value="0163">Banco del Orinoco</option>
+                                <option value="0166">Banco Agrícola de Venezuela</option>
+                                <option value="0168">Bancrecer</option>
+                                <option value="0169">Mi Banco</option>
+                                <option value="0171">Banco Activo</option>
+                                <option value="0172">Bancamiga</option>
+                                <option value="0174">Banplus</option>
+                                <option value="0175">Banco Bicentenario</option>
+                                <option value="0177">Banco de la Fuerza Armada (BANFANB)</option>
+                                <option value="0191">Banco Nacional de Crédito (BNC)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tr-monto">Monto exacto (Bs.)</label>
+                            <input type="number" id="tr-monto" min="1" step="0.01" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="tr-fecha">Fecha</label>
+                            <input type="date" id="tr-fecha" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="tr-comprobante">Adjuntar comprobante</label>
+                            <input type="file" id="tr-comprobante" accept="image/*,application/pdf" required>
+                        </div>
+                    </div>
+                    <div id="campos-efectivo" class="campos-metodo" style="display:none;">
+                        <div class="form-group">
+                            <label for="ef-monto">Cantidad entregada (USD $)</label>
+                            <input type="number" id="ef-monto" min="1" step="0.01" required autocomplete="off" placeholder="Ej: 10.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="ef-entregado">¿A quién entregó el efectivo?</label>
+                            <input type="text" id="ef-entregado" maxlength="40" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="ef-fecha">Fecha</label>
+                            <input type="date" id="ef-fecha" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="nuevo-nota">Nota para el administrador (opcional)</label>
+                        <textarea id="nuevo-nota" rows="2" maxlength="120" placeholder="Agrega una nota si lo deseas..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-glass">Registrar pago</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="cliente.js"></script>
+</body>
+</html>

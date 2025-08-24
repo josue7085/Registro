@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro | inter-Flash</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <img src="logo.png" alt="Logo inter-Flash" class="logo">
+        <h1 class="company-name">inter-Flash</h1>
+        <h2 id="register-title">Registro de Cliente</h2>
+        <form id="register-form">
+            <div class="input-group">
+                <span class="input-icon"><i class="fa-solid fa-user"></i></span>
+                <input type="text" id="nombres" placeholder="Nombres" required>
+            </div>
+            <div class="input-group">
+                <span class="input-icon"><i class="fa-solid fa-user"></i></span>
+                <input type="text" id="apellidos" placeholder="Apellidos" required>
+            </div>
+            <div class="input-group">
+                <select id="tipo-cedula" required style="width: 70px; border:none; background:transparent; font-size:1em;">
+                    <option value="V">V</option>
+                    <option value="E">E</option>
+                    <option value="RIF">RIF</option>
+                </select>
+                <input type="text" id="cedula" placeholder="Cédula" required pattern="[0-9]{6,10}">
+            </div>
+            <div class="input-group">
+                <span class="input-icon"><i class="fa-solid fa-envelope"></i></span>
+                <input type="email" id="correo" placeholder="Correo electrónico" required>
+            </div>
+            <div class="input-group">
+                <span class="input-icon"><i class="fa-solid fa-phone"></i></span>
+                <input type="tel" id="telefono" placeholder="Teléfono" required>
+            </div>
+            <div class="input-group">
+                <span class="input-icon"><i class="fa-solid fa-city"></i></span>
+                <select id="ciudad" required>
+                    <option value="">Selecciona ciudad</option>
+                    <option value="Colonia Tovar">Colonia Tovar</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <span class="input-icon"><i class="fa-solid fa-location-dot"></i></span>
+                <input type="text" id="direccion" placeholder="Dirección" required>
+            </div>
+            <div class="input-group">
+                <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+                <input type="password" id="contrasena" placeholder="Contraseña" required>
+                <span class="input-icon eye-icon" id="toggle-password"><i class="fa-solid fa-eye"></i></span>
+            </div>
+            <div class="input-group">
+                <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+                <input type="password" id="confirmar-contrasena" placeholder="Confirmar contraseña" required onpaste="return false;">
+                <span class="input-icon eye-icon" id="toggle-confirm-password"><i class="fa-solid fa-eye"></i></span>
+            </div>
+            <div id="password-strength" style="height:8px; border-radius:4px; background:#eee; margin-bottom:8px; overflow:hidden;"></div>
+            <small id="password-help">La contraseña debe tener al menos una mayúscula, un número y un caracter especial.</small>
+            <button type="submit" id="register-btn">Registrarse</button>
+            <button type="button" id="back-login-btn">Volver al login</button>
+            <div class="form-message" id="register-message"></div>
+        </form>
+    </div>
+    <script src="registro.js"></script>
+</body>
+</html>
