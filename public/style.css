@@ -1,3 +1,58 @@
+/* Botones de verificación y rechazo en pagos */
+.btn-verificar {
+	background: #43a047;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	padding: 6px 18px;
+	font-weight: 600;
+	cursor: pointer;
+	margin-right: 8px;
+	box-shadow: 0 1px 4px rgba(67,160,71,0.10);
+	transition: background 0.2s;
+}
+.btn-verificar:hover {
+	background: #388e3c;
+}
+.btn-rechazar {
+	background: #e53935;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	padding: 6px 18px;
+	font-weight: 600;
+	cursor: pointer;
+	box-shadow: 0 1px 4px rgba(229,57,53,0.10);
+	transition: background 0.2s;
+}
+.btn-rechazar:hover {
+	background: #b71c1c;
+}
+/* Etiquetas de estado de pagos */
+.badge-rojo {
+	background: #e53935;
+	color: #fff;
+	border-radius: 8px;
+	padding: 2px 12px;
+	font-weight: bold;
+	box-shadow: 0 1px 4px rgba(229,57,53,0.12);
+}
+.badge-amarillo {
+	background: #ffd600;
+	color: #222;
+	border-radius: 8px;
+	padding: 2px 12px;
+	font-weight: bold;
+	box-shadow: 0 1px 4px rgba(255,214,0,0.12);
+}
+.badge-verde {
+	background: #43a047;
+	color: #fff;
+	border-radius: 8px;
+	padding: 2px 12px;
+	font-weight: bold;
+	box-shadow: 0 1px 4px rgba(67,160,71,0.12);
+}
 /* Bandeja de notificaciones fija */
 /* Bandeja de notificaciones y chat fija */
 /* Bandeja de notificaciones y chat fija */

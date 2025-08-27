@@ -8,6 +8,28 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
+    <!-- Modal para corregir pago rechazado -->
+    <div id="modal-correccion" class="modal-glass" style="display:none;z-index:1000;">
+        <div class="modal-content" style="max-width:400px;">
+            <span id="cerrar-modal-correccion" class="close-modal" style="float:right;cursor:pointer;font-size:1.5em;">&times;</span>
+            <h3>Corregir pago rechazado</h3>
+            <form id="form-correccion-pago">
+                <div class="form-group">
+                    <label for="corregir-referencia">Nueva referencia</label>
+                    <input type="text" id="corregir-referencia" maxlength="20" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="corregir-monto">Nuevo monto</label>
+                    <input type="number" id="corregir-monto" min="1" step="0.01" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="corregir-comprobante">Adjuntar comprobante (opcional)</label>
+                    <input type="file" id="corregir-comprobante" accept="image/*,application/pdf">
+                </div>
+                <button type="submit" class="btn-glass">Enviar corrección</button>
+            </form>
+        </div>
+    </div>
         <!-- Bandeja de chat (fuera del container) -->
         <div id="bandeja-chat" class="bandeja-notif" style="display:none;">
             <div class="bandeja-header">
@@ -20,28 +42,6 @@
                 <input type="text" id="input-chat" placeholder="Escribe un mensaje..." maxlength="200" style="flex:1;padding:6px 10px;border-radius:8px;border:1px solid #b0bec5;">
                 <button type="submit" class="btn-glass" style="padding:6px 16px;">Enviar</button>
             </form>
-        </div>
-        <!-- Modal para corregir pago rechazado -->
-        <div id="modal-correccion" class="modal-glass" style="display:none;">
-            <div class="modal-content">
-                <span id="cerrar-modal-correccion" class="close-modal">&times;</span>
-                <h3>Corregir pago rechazado</h3>
-                <form id="form-correccion-pago">
-                    <div class="form-group">
-                        <label for="corregir-referencia">Nueva referencia</label>
-                        <input type="text" id="corregir-referencia" maxlength="20" required autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label for="corregir-comprobante">Adjuntar comprobante (opcional)</label>
-                        <input type="file" id="corregir-comprobante" accept="image/*,application/pdf">
-                    </div>
-                    <div class="form-group">
-                        <label for="corregir-nota">Nota para el administrador (opcional)</label>
-                        <textarea id="corregir-nota" rows="2" maxlength="120" placeholder="Agrega una nota si lo deseas..."></textarea>
-                    </div>
-                    <button type="submit" class="btn-glass">Enviar corrección</button>
-                </form>
-            </div>
         </div>
         <div class="container" style="max-width: 500px;">
             <div id="iconos-estado"></div>
@@ -237,6 +237,13 @@
             </div>
         </div>
     </div>
+    <!-- Modal para corregir pago rechazado -->
+    <!-- Eliminado: modal de corrección de pago rechazado -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="datos.js"></script>
     <script src="cliente.js"></script>
 </body>
 </html>

@@ -49,3 +49,14 @@ document.addEventListener('DOMContentLoaded', function() {
     renderClientesChat();
     renderMensajesChat();
 });
+
+// CRUD Firestore para chat
+function agregarMensajeChat(data) {
+  window.firestoreCRUD.add('mensajesChat', data)
+    .catch(err => alert('Error al enviar mensaje: ' + err.message));
+}
+function eliminarMensajeChat(id) {
+  if (!confirm('¿Seguro que deseas eliminar este mensaje?')) return;
+  window.firestoreCRUD.delete('mensajesChat', id)
+    .catch(err => alert('Error al eliminar mensaje: ' + err.message));
+}

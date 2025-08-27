@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Validación de formulario
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
         messageDiv.textContent = '';
         // Validar campos obligatorios
@@ -113,14 +113,35 @@ document.addEventListener('DOMContentLoaded', function() {
             messageDiv.textContent = 'Las contraseñas no coinciden.';
             return;
         }
-        // Simular registro exitoso
-        form.reset();
-        passwordStrength.style.width = '0%';
-        messageDiv.style.color = '#43a047';
-        messageDiv.innerHTML = '¡Registro exitoso!<br>Gracias por unirte a nuestra gran familia de <b>inter-Flash</b>.<br>Serás redirigido al inicio de sesión.';
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 2500);
+        // Registro real en Firebase
+        try {
+            const cred = await firebase.auth().createUserWithEmailAndPassword(correo, contrasena);
+            const user = cred.user;
+            await firebase.firestore().collection('usuarios').doc(user.uid).set({
+                nombres,
+                apellidos,
+                tipoCedula,
+                cedula,
+                correo,
+                telefono,
+                ciudad,
+                direccion,
+                rol: 'cliente',
+                estado: 'activo',
+                fechaRegistro: new Date(),
+                uid: user.uid
+            });
+            form.reset();
+            passwordStrength.style.width = '0%';
+            messageDiv.style.color = '#43a047';
+            messageDiv.innerHTML = '¡Registro exitoso!<br>Gracias por unirte a nuestra gran familia de <b>inter-Flash</b>.<br>Serás redirigido al inicio de sesión.';
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2500);
+        } catch (err) {
+            messageDiv.style.color = '#e53935';
+            messageDiv.textContent = 'Error: ' + (err.message || 'No se pudo registrar.');
+        }
     });
     // Botón de volver al login
     const backLoginBtn = document.getElementById('back-login-btn');

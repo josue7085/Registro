@@ -125,8 +125,14 @@ function abrirModalRecibo(idx = null) {
             logo: recibo.logo,
             marcaAgua: recibo.marcaAgua
         };
-        if (idx !== null) recibos[idx] = nuevoRecibo;
-        else recibos.push(nuevoRecibo);
+        if (idx !== null) {
+            recibos[idx] = nuevoRecibo;
+            editarRecibo(recibo.id, nuevoRecibo);
+        }
+        else {
+            recibos.push(nuevoRecibo);
+            agregarRecibo(nuevoRecibo);
+        }
         renderTablaRecibos();
         cerrarModalRecibo();
     };
@@ -188,8 +194,10 @@ function cerrarModalRecibo() {
 
 function eliminarRecibo(idx) {
     if (confirm('¿Eliminar este recibo?')) {
+        const reciboId = recibos[idx].id;
         recibos.splice(idx, 1);
         renderTablaRecibos();
+        eliminarRecibo(reciboId);
     }
 }
 
@@ -197,3 +205,21 @@ document.getElementById('btn-nuevo-recibo').onclick = () => abrirModalRecibo();
 
 // Inicializar tabla
 renderTablaRecibos();
+
+// CRUD Firestore para recibos
+function agregarRecibo(data) {
+  window.firestoreCRUD.add('recibos', data)
+    .then(() => alert('Recibo añadido correctamente'))
+    .catch(err => alert('Error al añadir recibo: ' + err.message));
+}
+function editarRecibo(id, data) {
+  window.firestoreCRUD.update('recibos', id, data)
+    .then(() => alert('Recibo actualizado'))
+    .catch(err => alert('Error al actualizar recibo: ' + err.message));
+}
+function eliminarRecibo(id) {
+  if (!confirm('¿Seguro que deseas eliminar este recibo?')) return;
+  window.firestoreCRUD.delete('recibos', id)
+    .then(() => alert('Recibo eliminado'))
+    .catch(err => alert('Error al eliminar recibo: ' + err.message));
+}

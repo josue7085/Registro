@@ -85,17 +85,20 @@ document.addEventListener('DOMContentLoaded', function() {
     function cerrarTodosLosModales() {
         const modales = [
             document.getElementById('modal-nuevo-pago'),
-            document.getElementById('modal-correccion'),
             document.getElementById('bandeja-notificaciones')
         ];
         modales.forEach(m => { if (m) m.style.display = 'none'; });
         document.body.style.overflow = '';
     }
-    // Notificaciones de ejemplo (simulación)
-    let notificaciones = [
-        { icon: 'fa-bolt', texto: '¡Tu pago de agosto fue aprobado!' },
-        { icon: 'fa-exclamation-circle', texto: 'Recuerda que tu servicio vence el 30/09/2025.' }
-    ];
+    // Notificaciones reales desde Firestore
+    let uidCliente = null;
+    function getNotificacionesCliente() {
+        const todas = window.datosGlobales && Array.isArray(window.datosGlobales.notificaciones)
+            ? window.datosGlobales.notificaciones : [];
+        // Filtrar solo las del cliente autenticado usando uid
+        if (!uidCliente) return [];
+        return todas.filter(n => n.destinatario === uidCliente || n.destinatario === 'Todos');
+    }
     // Insertar iconos de notificación y chat en la esquina superior derecha (declaración única)
     const iconos = `
         <span class="icono-con-contador">
@@ -123,13 +126,14 @@ document.addEventListener('DOMContentLoaded', function() {
         cerrarTodosLosModales();
         // Limpiar lista
         listaBandejaNotif.innerHTML = '';
+        const notificaciones = getNotificacionesCliente();
         if (notificaciones.length === 0) {
             sinBandejaNotif.style.display = 'block';
         } else {
             sinBandejaNotif.style.display = 'none';
             notificaciones.forEach(n => {
                 const li = document.createElement('li');
-                li.innerHTML = `<i class=\"fa-solid ${n.icon}\"></i> ${n.texto}`;
+                li.innerHTML = `<i class='fa-solid fa-bell'></i> <b>${n.titulo}:</b> ${n.mensaje}`;
                 listaBandejaNotif.appendChild(li);
             });
         }
@@ -156,6 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const notifBadge = document.getElementById('contador-notif');
         const chatBadge = document.getElementById('contador-chat');
         if (notifBadge) {
+            const notificaciones = getNotificacionesCliente();
             notifBadge.style.display = notificaciones.length > 0 ? 'inline-block' : 'none';
             notifBadge.textContent = notificaciones.length;
         }
@@ -165,59 +170,160 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     actualizarContadorNotif();
-    // Simulación de datos (luego se conectará a Firebase)
-    const datosCliente = {
-        nombres: 'Yury',
-        apellidos: 'Fehr',
-        estadoCliente: 'activo',
-        fechaVencimientoServicio: '2025-09-30',
-        planServicio: 'Plan 50 Mbps',
-        precioDolar: 15,
-        precioBs: 540,
-        ciudad: 'Colonia Tovar',
-        direccion: 'Calle Principal, Casa 12',
-        pagos: [
-            { fecha: '2025-08-01', monto: 15, referencia: '123456', estado: 'aprobado' },
-            { fecha: '2025-07-01', monto: 15, referencia: '654321', estado: 'rechazado', motivoRechazo: 'Referencia inválida. Adjunte comprobante legible.' },
-            { fecha: '2025-06-01', monto: 15, referencia: '789012', estado: 'pendiente' }
-        ]
-    };
-
-    document.getElementById('nombre-cliente').textContent = datosCliente.nombres + ' ' + datosCliente.apellidos;
-    document.getElementById('estado-servicio').textContent = datosCliente.estadoCliente.charAt(0).toUpperCase() + datosCliente.estadoCliente.slice(1);
-    document.getElementById('fecha-vencimiento').textContent = datosCliente.fechaVencimientoServicio;
-    document.getElementById('plan-servicio').textContent = datosCliente.planServicio;
-    document.getElementById('precio-plan').textContent = `$ ${datosCliente.precioDolar} / Bs. ${datosCliente.precioBs}`;
-    document.getElementById('ciudad-cliente').textContent = datosCliente.ciudad;
-    document.getElementById('direccion-cliente').textContent = datosCliente.direccion;
-
-    // Badge color según estado
-    const badge = document.getElementById('estado-servicio');
-    badge.className = 'badge ' + (datosCliente.estadoCliente === 'activo' ? 'badge-activo' : 'badge-inactivo');
-
-    // Historial de pagos
+    // --- Cargar datos reales del cliente autenticado desde Firestore ---
+    let datosCliente = null;
+    let pagosCliente = [];
     const pagosDiv = document.getElementById('historial-pagos');
-    if (datosCliente.pagos.length > 0) {
+    // Esperar a que Firebase Auth esté listo
+    firebase.auth().onAuthStateChanged(async function(user) {
+        if (!user) {
+            window.location.href = 'index.html';
+            return;
+        }
+        uidCliente = user.uid;
+        // Buscar cliente por correo
+        const snap = await db.collection('usuarios').where('correo', '==', user.email).limit(1).get();
+        if (snap.empty) {
+            alert('No se encontró información de cliente.');
+            return;
+        }
+        datosCliente = snap.docs[0].data();
+
+        // Función para mostrar datos del cliente con los planes ya cargados
+        function mostrarDatosClienteConPlan() {
+            let plan = null;
+            if (window.datosGlobales && Array.isArray(window.datosGlobales.planes) && datosCliente.planServicioId) {
+                plan = window.datosGlobales.planes.find(p => p.id === datosCliente.planServicioId);
+            }
+            // Saludo personalizado
+            const nombreCompleto = (datosCliente.nombres || '') + ' ' + (datosCliente.apellidos || '');
+            document.getElementById('nombre-cliente').textContent = nombreCompleto;
+            const bienvenida = document.getElementById('bienvenida-cliente');
+            if (bienvenida) bienvenida.innerHTML = `¡Hola, <span id="nombre-cliente">${nombreCompleto}</span>!`;
+            document.getElementById('estado-servicio').textContent = (datosCliente.estadoCliente || 'Desconocido').charAt(0).toUpperCase() + (datosCliente.estadoCliente || 'Desconocido').slice(1);
+            document.getElementById('plan-servicio').textContent = plan ? plan.nombre : (datosCliente.planServicioNombre || datosCliente.planServicioId || '---');
+            document.getElementById('fecha-vencimiento').textContent = plan && plan.fechaCorte ? plan.fechaCorte : (datosCliente.fechaVencimientoServicio || '--/--/----');
+            document.getElementById('precio-plan').textContent = plan && plan.precio ? `$ ${plan.precio} / Bs. ${plan.precioBs || '--'}` : (datosCliente.precioDolar && datosCliente.precioBs ? `$ ${datosCliente.precioDolar} / Bs. ${datosCliente.precioBs}` : '$ -- / Bs. --');
+            document.getElementById('ciudad-cliente').textContent = datosCliente.ciudad || '';
+            document.getElementById('direccion-cliente').textContent = datosCliente.direccion || '';
+            // Badge color según estado
+            const badge = document.getElementById('estado-servicio');
+            badge.className = 'badge ' + (datosCliente.estadoCliente === 'activo' ? 'badge-activo' : 'badge-inactivo');
+        }
+
+        // Si los planes ya están cargados, mostrar de una vez
+        if (window.datosGlobales && Array.isArray(window.datosGlobales.planes) && window.datosGlobales.planes.length > 0) {
+            mostrarDatosClienteConPlan();
+        } else {
+            // Esperar a que se carguen los planes
+            document.addEventListener('planesActualizados', mostrarDatosClienteConPlan, { once: true });
+        }
+
+        // Cargar pagos desde subcolección pagos
+                                // Escuchar pagos del cliente en la colección global 'pagos'
+                                db.collection('pagos').where('clienteId', '==', user.uid).orderBy('fecha', 'desc')
+                                    .onSnapshot((snapPagos) => {
+                                        pagosCliente = snapPagos.docs.map(d => d.data());
+                                        renderPagosCliente();
+                                    });
+    });
+
+    function renderPagosCliente() {
+        // Limpiar solo el contenido, no el nodo
         pagosDiv.innerHTML = '';
-        datosCliente.pagos.forEach((pago) => {
+        if (!pagosCliente || pagosCliente.length === 0) {
+            pagosDiv.innerHTML = '<p style="opacity:0.7;">No hay pagos registrados.</p>';
+            return;
+        }
+        pagosCliente.forEach((pago, idx) => {
             const pagoEl = document.createElement('div');
             pagoEl.className = 'pago-item';
-            let html = `<b>${pago.fecha}</b> - Bs. ${pago.monto} - Ref: ${pago.referencia} <span class="badge badge-${pago.estado}">${pago.estado.charAt(0).toUpperCase() + pago.estado.slice(1)}</span>`;
-            if (pago.estado === 'rechazado' && pago.motivoRechazo) {
-                html += `<br><span class="motivo-rechazo"><i class=\"fa-solid fa-circle-exclamation\"></i> <b>Motivo:</b> ${pago.motivoRechazo}</span>`;
-                html += ` <button class="btn-corrige-pago" data-idx="${datosCliente.pagos.indexOf(pago)}">Corregir</button>`;
+            let estado = pago.estado ? pago.estado.toLowerCase() : '';
+            let colorClass = '';
+            if (estado === 'rechazado') colorClass = 'badge-rojo';
+            else if (estado === 'pendiente') colorClass = 'badge-amarillo';
+            else if (estado === 'verificado') colorClass = 'badge-verde';
+            let badgeClass = `badge ${colorClass}`;
+            let clickable = estado === 'rechazado' ? ` style='cursor:pointer;' data-idx='${idx}'` : '';
+            let html = `<b>${pago.fecha || ''}</b> - Bs. ${pago.monto || ''} - Ref: ${pago.referencia || ''} <span class='${badgeClass}'${clickable}>${pago.estado ? pago.estado.charAt(0).toUpperCase() + pago.estado.slice(1) : ''}</span>`;
+            if (estado === 'rechazado' && pago.motivoRechazo) {
+                html += `<br><span class='motivo-rechazo'><i class='fa-solid fa-circle-exclamation'></i> <b>Motivo:</b> ${pago.motivoRechazo}</span>`;
             }
             pagoEl.innerHTML = html;
             pagosDiv.appendChild(pagoEl);
         });
-        // Delegación de eventos para botón corregir
-        pagosDiv.addEventListener('click', function(e) {
-            const btn = e.target.closest('.btn-corrige-pago');
-            if (btn) {
-                const idx = btn.getAttribute('data-idx');
-                mostrarModalCorreccion(idx);
+        // Delegación de eventos para badge 'Rechazado'
+        pagosDiv.onclick = function(e) {
+            const badge = e.target.closest('.badge-rojo');
+            if (badge && badge.hasAttribute('data-idx')) {
+                const idx = badge.getAttribute('data-idx');
+                // Abrir modal y cargar datos del pago rechazado
+                const modal = document.getElementById('modal-correccion');
+                const cerrarModal = document.getElementById('cerrar-modal-correccion');
+                const formCorreccion = document.getElementById('form-correccion-pago');
+                const inputRef = document.getElementById('corregir-referencia');
+                const inputMonto = document.getElementById('corregir-monto');
+                const inputComp = document.getElementById('corregir-comprobante');
+                if (!modal || !formCorreccion || !inputRef || !inputMonto) return;
+                // Cargar datos actuales
+                inputRef.value = pagosCliente[idx].referencia || '';
+                inputMonto.value = pagosCliente[idx].monto || '';
+                inputComp.value = '';
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                // Cerrar modal
+                cerrarModal.onclick = function() {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = '';
+                };
+                window.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && modal.style.display === 'flex') {
+                        modal.style.display = 'none';
+                        document.body.style.overflow = '';
+                    }
+                });
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                        document.body.style.overflow = '';
+                    }
+                });
+                // Por ahora solo interfaz, sin guardar
+                formCorreccion.onsubmit = function(ev) {
+                    ev.preventDefault();
+                    const nuevaRef = inputRef.value.trim();
+                    const nuevoMonto = parseFloat(inputMonto.value);
+                    // const comprobante = inputComp.files[0]; // para futura integración
+                    if (nuevaRef.length < 4 || isNaN(nuevoMonto) || nuevoMonto <= 0) {
+                        alert('Referencia y monto válidos son obligatorios.');
+                        return;
+                    }
+                    // Actualizar en Firestore
+                    firebase.auth().onAuthStateChanged(async function(user) {
+                        if (!user) return;
+                        // Buscar el pago por índice en la consulta actual
+                        const pagosSnap = await db.collection('pagos')
+                          .where('clienteId', '==', user.uid)
+                          .orderBy('fecha', 'desc')
+                          .get();
+                        const pagoDoc = pagosSnap.docs[idx];
+                        if (!pagoDoc) {
+                            alert('No se encontró el pago a corregir.');
+                            return;
+                        }
+                        await db.collection('pagos').doc(pagoDoc.id).update({
+                            referencia: nuevaRef,
+                            monto: nuevoMonto,
+                            estado: 'pendiente',
+                            motivoRechazo: null
+                        });
+                        modal.style.display = 'none';
+                        document.body.style.overflow = '';
+                        alert('¡Corrección enviada y guardada en Firestore!');
+                    });
+                };
             }
-        });
+        };
     }
 
     // Modal y lógica para registrar nuevo pago con métodos dinámicos
@@ -251,15 +357,40 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     selectMetodo.addEventListener('change', function() {
+        // Mostrar solo los campos del método seleccionado y quitar required de los ocultos
         camposPagoMovil.style.display = this.value === 'pago-movil' ? 'block' : 'none';
         camposTransferencia.style.display = this.value === 'transferencia' ? 'block' : 'none';
         camposEfectivo.style.display = this.value === 'efectivo' ? 'block' : 'none';
+        // Quitar required de todos los campos de métodos
+        [
+            ...camposPagoMovil.querySelectorAll('input,select'),
+            ...camposTransferencia.querySelectorAll('input,select'),
+            ...camposEfectivo.querySelectorAll('input,select')
+        ].forEach(el => el.required = false);
+        // Poner required solo a los visibles
+        if (this.value === 'pago-movil') {
+            camposPagoMovil.querySelectorAll('input,select').forEach(el => el.required = true);
+        } else if (this.value === 'transferencia') {
+            camposTransferencia.querySelectorAll('input,select').forEach(el => el.required = true);
+        } else if (this.value === 'efectivo') {
+            camposEfectivo.querySelectorAll('input,select').forEach(el => el.required = true);
+        }
     });
 
     formNuevoPago.addEventListener('submit', function(e) {
         e.preventDefault();
         const metodo = selectMetodo.value;
-        let pago = { fecha: new Date().toISOString().slice(0,10), estado: 'pendiente' };
+        // Generar número de pago igual que en admin
+        function generarNumeroPago() {
+            const fecha = new Date().toISOString().slice(0,10).replace(/-/g,'');
+            const random = Math.floor(Math.random()*9000+1000); // 4 dígitos aleatorios
+            return `${random}-${fecha}`;
+        }
+        let pago = {
+            numero: generarNumeroPago(),
+            fecha: new Date().toISOString().slice(0,10),
+            estado: 'Pendiente'
+        };
         if (metodo === 'pago-movil') {
             pago.metodo = 'Pago Móvil';
             pago.referencia = document.getElementById('pm-referencia').value.trim();
@@ -299,56 +430,37 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         pago.nota = document.getElementById('nuevo-nota').value.trim();
-        datosCliente.pagos.unshift(pago);
-        cerrarModalPago();
-        location.reload();
+        // Guardar el pago en Firestore en la subcolección 'pagos' del usuario y en la colección global 'pagos'
+                                firebase.auth().onAuthStateChanged(async function(user) {
+                                        if (!user) return;
+                                        try {
+                                                // Usar siempre el UID real del usuario autenticado
+                                                const userId = user.uid;
+                                                // Añadir info de usuario al pago para la colección global
+                                                const pagoGlobal = Object.assign({}, pago, {
+                                                        clienteId: userId,
+                                                        clienteCorreo: user.email
+                                                });
+                                                // Guardar solo en colección global y loguear resultado
+                                                await db.collection('pagos').add(pagoGlobal)
+                                                    .then(docRef => {
+                                                        console.log('Pago guardado en colección global pagos:', docRef.id);
+                                                    })
+                                                    .catch(err => {
+                                                        console.error('Error al guardar en colección global pagos:', err);
+                                                        alert('Error al guardar en colección global pagos: ' + err.message);
+                                                        throw err;
+                                                    });
+                                                cerrarModalPago();
+                                                alert('Pago registrado correctamente.');
+                                        } catch (err) {
+                                                alert('Error al registrar el pago: ' + err.message);
+                                                console.error('Error completo al registrar el pago:', err);
+                                        }
+                                });
     });
 
     // Modal corrección de pago
-    const modal = document.getElementById('modal-correccion');
-    const cerrarModal = document.getElementById('cerrar-modal-correccion');
-    const formCorreccion = document.getElementById('form-correccion-pago');
-    let idxPagoCorregir = null;
-
-    function mostrarModalCorreccion(idx) {
-        cerrarTodosLosModales();
-        idxPagoCorregir = idx;
-        // Limpiar campos
-        formCorreccion.reset();
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
-    function cerrarModalCorreccion() {
-        modal.style.display = 'none';
-        document.body.style.overflow = '';
-        idxPagoCorregir = null;
-    }
-    cerrarModal.addEventListener('click', cerrarModalCorreccion);
-    window.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modal.style.display === 'flex') cerrarModalCorreccion();
-    });
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) cerrarModalCorreccion();
-    });
-
-    formCorreccion.addEventListener('submit', function(e) {
-        e.preventDefault();
-        // Simulación: actualizar el pago en datosCliente y recargar la vista
-        const nuevaRef = document.getElementById('corregir-referencia').value.trim();
-        const nota = document.getElementById('corregir-nota').value.trim();
-        // (No se sube archivo en la demo)
-        if (nuevaRef.length < 4) {
-            alert('La referencia debe tener al menos 4 caracteres.');
-            return;
-        }
-        if (idxPagoCorregir !== null) {
-            datosCliente.pagos[idxPagoCorregir].referencia = nuevaRef;
-            datosCliente.pagos[idxPagoCorregir].estado = 'pendiente';
-            datosCliente.pagos[idxPagoCorregir].motivoRechazo = undefined;
-            // Podrías guardar la nota en un campo adicional si lo deseas
-        }
-        cerrarModalCorreccion();
-        // Recargar historial
-        location.reload();
-    });
+    // Modal corrección de pago
+    // ...eliminado: toda la lógica y modal de corrección de pagos...
 });

@@ -1,6 +1,23 @@
 // Lógica básica para menú hamburguesa y dashboard demo
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar panel de usuarios y ocultar los demás
+    const usuariosMenu = document.getElementById('usuarios-menu');
+    const panelUsuarios = document.getElementById('panel-usuarios');
+    if (usuariosMenu && panelUsuarios) {
+        usuariosMenu.addEventListener('click', function() {
+            if (panelClientes) panelClientes.style.display = 'none';
+            if (panelPlanes) panelPlanes.style.display = 'none';
+            if (panelRecibos) panelRecibos.style.display = 'none';
+            if (panelPagos) panelPagos.style.display = 'none';
+            if (panelNotificaciones) panelNotificaciones.style.display = 'none';
+            if (panelChat) panelChat.style.display = 'none';
+            if (dashboardCards) dashboardCards.style.display = 'none';
+            if (dashboardGraphs) dashboardGraphs.style.display = 'none';
+            panelUsuarios.style.display = 'block';
+            if (typeof renderTablaUsuarios === 'function') renderTablaUsuarios();
+        });
+    }
     // Menú hamburguesa con animación de giro y fade
     const sidebar = document.getElementById('sidebar');
     const menuToggleHeader = document.getElementById('menu-toggle-header');
@@ -66,11 +83,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Demo: datos de dashboard
-    document.getElementById('clientes-activos').textContent = 128;
-    document.getElementById('clientes-suspendidos').textContent = 7;
-    document.getElementById('pagos-verificar').textContent = 4;
-    document.getElementById('dinero-usd').textContent = '$1,250';
-    document.getElementById('dinero-bs').textContent = 'Bs. 45,000';
+    const clientesActivos = document.getElementById('clientes-activos');
+    if (clientesActivos) clientesActivos.textContent = 128;
+    const clientesSuspendidos = document.getElementById('clientes-suspendidos');
+    if (clientesSuspendidos) clientesSuspendidos.textContent = 7;
+    const pagosVerificar = document.getElementById('pagos-verificar');
+    if (pagosVerificar) pagosVerificar.textContent = 4;
+    const dineroUsd = document.getElementById('dinero-usd');
+    if (dineroUsd) dineroUsd.textContent = '$1,250';
+    const dineroBs = document.getElementById('dinero-bs');
+    if (dineroBs) dineroBs.textContent = 'Bs. 45,000';
 
     // Demo: gráficas con Chart.js
     if (window.Chart) {
@@ -81,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 labels: ['Activos', 'Suspendidos'],
                 datasets: [{
                     data: [128, 7],
-                    backgroundColor: ['#1976d2', '#e53935'],
+                    backgroundColor: ['#1976d2', '#e53935']
                 }]
             },
             options: {
@@ -98,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 datasets: [{
                     label: 'Pagos',
                     data: [12, 19, 8, 15, 10, 17, 14, 20],
-                    backgroundColor: '#1976d2',
+                    backgroundColor: '#1976d2'
                 }]
             },
             options: {

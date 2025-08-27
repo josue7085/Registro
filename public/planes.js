@@ -1,22 +1,22 @@
-// Datos mock de planes de servicio
-window.datosGlobales.planes = [
-  { id: 1, nombre: "Básico", velocidad: "10 Mbps", precio: "$10" },
-  { id: 2, nombre: "Premium", velocidad: "50 Mbps", precio: "$25" }
-];
+
 
 function renderTablaPlanes() {
   const tbody = document.getElementById('tabla-planes-body');
   if (!tbody) return;
   const planes = window.datosGlobales.planes;
+  // Detectar si el usuario es técnico (solo lectura)
+  const urlParams = new URLSearchParams(window.location.search);
+  const esTecnico = urlParams.get('rol') === 'tecnico';
   tbody.innerHTML = planes.map(plan => `
     <tr>
       <td>${plan.nombre}</td>
       <td>${plan.velocidad}</td>
       <td>${plan.precio}</td>
+      <td>${plan.fechaCorte || ''}</td>
       <td class="acciones">
         <button class="icon-btn btn-ver-plan" title="Ver" data-id="${plan.id}"><i class="fa fa-eye"></i></button>
-        <button class="icon-btn btn-editar-plan" title="Editar" data-id="${plan.id}"><i class="fa fa-pen"></i></button>
-        <button class="icon-btn btn-eliminar-plan" title="Eliminar" data-id="${plan.id}"><i class="fa fa-trash"></i></button>
+        ${!esTecnico ? `<button class="icon-btn btn-editar-plan" title="Editar" data-id="${plan.id}"><i class="fa fa-pen"></i></button>` : ''}
+        ${!esTecnico ? `<button class="icon-btn btn-eliminar-plan" title="Eliminar" data-id="${plan.id}"><i class="fa fa-trash"></i></button>` : ''}
       </td>
     </tr>
   `).join('');
@@ -24,6 +24,7 @@ function renderTablaPlanes() {
 
 document.addEventListener('DOMContentLoaded', function() {
   renderTablaPlanes();
+  document.addEventListener('planesActualizados', renderTablaPlanes);
   // Evento para añadir nuevo plan
   const btnNuevoPlan = document.getElementById('btn-nuevo-plan');
   if (btnNuevoPlan) {
@@ -36,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btn = e.target.closest('button');
     if (!btn) return;
     const id = btn.dataset.id;
-    const plan = planes.find(p => p.id == id);
+    const plan = window.datosGlobales.planes.find(p => p.id == id);
     if (btn.classList.contains('btn-ver-plan')) {
       mostrarModalPlan('Información de Plan', infoPlanHTML(plan));
     }
@@ -46,16 +47,13 @@ document.addEventListener('DOMContentLoaded', function() {
         ev.preventDefault();
         const data = Object.fromEntries(new FormData(this));
         Object.assign(plan, data);
+        editarPlan(plan.id, data);
         renderTablaPlanes();
         document.getElementById('modal-plan').style.display = 'none';
       };
     }
     if (btn.classList.contains('btn-eliminar-plan')) {
-      if (confirm('¿Seguro que deseas eliminar este plan?')) {
-        const idx = planes.findIndex(p => p.id == id);
-        if (idx !== -1) planes.splice(idx, 1);
-        renderTablaPlanes();
-      }
+      eliminarPlan(id);
     }
   });
 });
@@ -81,8 +79,8 @@ function mostrarModalPlan(titulo, contenido, esNuevo) {
     document.getElementById('form-editar-plan').onsubmit = function(ev) {
       ev.preventDefault();
       const data = Object.fromEntries(new FormData(this));
-      data.id = Date.now();
-      planes.push(data);
+      // No asignar id manual, Firestore lo genera automáticamente
+      agregarPlan(data);
       renderTablaPlanes();
       modal.style.display = 'none';
       document.dispatchEvent(new Event('planesActualizados'));
@@ -95,6 +93,7 @@ function infoPlanHTML(plan) {
     <p><b>Nombre:</b> ${plan.nombre}</p>
     <p><b>Velocidad:</b> ${plan.velocidad}</p>
     <p><b>Precio:</b> ${plan.precio}</p>
+    <p><b>Fecha de corte:</b> ${plan.fechaCorte || ''}</p>
   `;
 }
 
@@ -104,7 +103,39 @@ function editarPlanHTML(plan) {
       <label>Nombre:<br><input name='nombre' value='${plan.nombre || ''}' required></label><br><br>
       <label>Velocidad:<br><input name='velocidad' value='${plan.velocidad || ''}' required></label><br><br>
       <label>Precio:<br><input name='precio' value='${plan.precio || ''}' required></label><br><br>
+      <label>Fecha de corte:<br><input type='date' name='fechaCorte' value='${plan.fechaCorte || ''}' required></label><br><br>
       <button type='submit' class='btn-guardar'>Guardar</button>
     </form>
   `;
 }
+
+// Al modificar planes:
+// window.datosGlobales.planes = [...];
+// document.dispatchEvent(new Event('planesActualizados'));
+
+// Añadir plan
+function agregarPlan(data) {
+  window.firestoreCRUD.add('planes', data)
+    .then(() => alert('Plan añadido correctamente'))
+    .catch(err => alert('Error al añadir plan: ' + err.message));
+}
+
+// Editar plan
+function editarPlan(id, data) {
+  window.firestoreCRUD.update('planes', id, data)
+    .then(() => alert('Plan actualizado'))
+    .catch(err => alert('Error al actualizar plan: ' + err.message));
+}
+
+// Eliminar plan
+function eliminarPlan(id) {
+  if (!confirm('¿Seguro que deseas eliminar este plan?')) return;
+  window.firestoreCRUD.delete('planes', id)
+    .then(() => alert('Plan eliminado'))
+    .catch(err => alert('Error al eliminar plan: ' + err.message));
+}
+
+// Ejemplo de uso en el panel (ajusta según tu UI):
+// agregarPlan({nombre: 'Nuevo', ...})
+// editarPlan(id, {nombre: 'Editado', ...})
+// eliminarPlan(id)

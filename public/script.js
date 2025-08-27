@@ -1,3 +1,71 @@
+// --- REGISTRO EN idex.html ---
+const registroForm = document.getElementById('registroForm');
+const btnRegistrar = document.getElementById('btnRegistrar');
+const mensajeError = document.getElementById('mensajeError');
+
+if (registroForm && btnRegistrar) {
+			btnRegistrar.disabled = false;
+			btnRegistrar.removeAttribute('disabled');
+			console.log('Botón de registro habilitado');
+			registroForm.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				mensajeError.textContent = '';
+				console.log('Evento submit disparado');
+				// Verificar inicialización de Firebase
+				if (!window.auth || !window.db) {
+					console.error('Firebase no está inicializado correctamente.');
+					mensajeError.textContent = 'Error interno: Firebase no está inicializado.';
+					mensajeError.style.color = 'red';
+					return;
+				}
+				const nombres = document.getElementById('nombres').value.trim();
+				const apellidos = document.getElementById('apellidos').value.trim();
+				const cedula = document.getElementById('cedula').value.trim();
+				const telefono = document.getElementById('telefono').value.trim();
+				const correo = document.getElementById('correo').value.trim();
+				const contrasena = document.getElementById('contrasena').value;
+				const verificarContrasena = document.getElementById('verificarContrasena').value;
+				console.log('Datos capturados:', {nombres, apellidos, cedula, telefono, correo});
+				if (!nombres || !apellidos || !cedula || !telefono || !correo || !contrasena || !verificarContrasena) {
+					mensajeError.textContent = 'Por favor, completa todos los campos.';
+					mensajeError.style.color = 'red';
+					console.warn('Campos incompletos');
+					return;
+				}
+				if (contrasena !== verificarContrasena) {
+					mensajeError.textContent = 'Las contraseñas no coinciden.';
+					mensajeError.style.color = 'red';
+					console.warn('Contraseñas no coinciden');
+					return;
+				}
+				try {
+					console.log('Intentando crear usuario en Auth...');
+					const cred = await auth.createUserWithEmailAndPassword(correo, contrasena);
+					console.log('Usuario creado en Auth:', cred.user.uid);
+					await cred.user.updateProfile({ displayName: nombres + ' ' + apellidos });
+					console.log('Perfil actualizado');
+					await db.collection('usuarios').doc(cred.user.uid).set({
+						nombres,
+						apellidos,
+						cedula,
+						telefono,
+						correo,
+						rol: 'cliente',
+						estado: 'activo',
+						fechaRegistro: new Date(),
+						uid: cred.user.uid
+					});
+					console.log('Usuario guardado en Firestore');
+					mensajeError.textContent = '¡Registro exitoso! Ahora puedes iniciar sesión.';
+					mensajeError.style.color = 'green';
+					registroForm.reset();
+				} catch (err) {
+					console.error('Error en registro:', err);
+					mensajeError.textContent = 'Error: ' + (err.message || 'No se pudo registrar.');
+					mensajeError.style.color = 'red';
+				}
+			});
+}
 // --- Textos multilenguaje ---
 const translations = {
 	es: {
@@ -212,12 +280,102 @@ toggleLoginPassword.addEventListener('click', () => {
 });
 
 
+
 // Elementos
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
 const showRegister = document.getElementById('show-register');
 const backLogin = document.getElementById('back-login');
 const langSelect = document.getElementById('lang-select');
+const loginMessage = document.getElementById('login-message');
+const registerMessage = document.getElementById('register-message');
+
+// --- LOGIN ---
+if (loginForm) {
+	   loginForm.addEventListener('submit', async (e) => {
+		   e.preventDefault();
+		   loginMessage.textContent = '';
+		   const email = document.getElementById('login-email').value.trim();
+		   const password = document.getElementById('login-password').value;
+		   if (!email || !password) {
+			   loginMessage.textContent = 'Por favor, completa todos los campos.';
+			   loginMessage.style.color = 'red';
+			   return;
+		   }
+		   try {
+			   const cred = await auth.signInWithEmailAndPassword(email, password);
+			   const user = cred.user;
+			   // Buscar el rol en la colección usuarios (por correo)
+			   const userDoc = await db.collection('usuarios').where('correo', '==', user.email).limit(1).get();
+			   let rol = null;
+			   let usuarioData = null;
+			   if (!userDoc.empty) {
+				   usuarioData = userDoc.docs[0].data();
+				   rol = (usuarioData.rol || '').toLowerCase();
+			   }
+			   loginMessage.textContent = '¡Inicio de sesión exitoso! Redirigiendo...';
+			   loginMessage.style.color = 'green';
+			   setTimeout(() => {
+				   if (rol === 'admin') {
+					   window.location.href = 'admin.html';
+				   } else if (rol === 'tecnico') {
+					   window.location.href = 'admin.html?rol=tecnico';
+				   } else if (rol === 'cliente') {
+					   if (usuarioData) {
+						   localStorage.setItem('clienteInfo', JSON.stringify(usuarioData));
+					   }
+					   window.location.href = 'cliente.html';
+				   } else {
+					   // Si el rol no está definido, por seguridad, no dejar pasar
+					   loginMessage.textContent = 'Tu cuenta no tiene un rol asignado. Contacta al administrador.';
+					   loginMessage.style.color = 'red';
+				   }
+			   }, 1000);
+		   } catch (err) {
+			   loginMessage.textContent = 'Error: ' + (err.message || 'No se pudo iniciar sesión.');
+			   loginMessage.style.color = 'red';
+		   }
+	   });
+}
+
+// --- REGISTRO ---
+if (registerForm) {
+	registerForm.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		registerMessage.textContent = '';
+		const nombre = document.getElementById('register-nombre').value.trim();
+		const email = document.getElementById('register-email').value.trim();
+		const password = document.getElementById('register-password').value;
+		if (!nombre || !email || !password) {
+			registerMessage.textContent = 'Por favor, completa todos los campos.';
+			registerMessage.style.color = 'red';
+			return;
+		}
+		try {
+			const cred = await auth.createUserWithEmailAndPassword(email, password);
+			// Guardar nombre en el perfil
+			await cred.user.updateProfile({ displayName: nombre });
+			// Registrar en Firestore
+			await db.collection('usuarios').doc(cred.user.uid).set({
+				nombres: nombre,
+				correo: email,
+				rol: 'cliente',
+				estado: 'activo',
+				fechaRegistro: new Date(),
+				uid: cred.user.uid
+			});
+			registerMessage.textContent = '¡Registro exitoso! Ahora puedes iniciar sesión.';
+			registerMessage.style.color = 'green';
+			setTimeout(() => {
+				registerForm.classList.add('hidden');
+				loginForm.classList.remove('hidden');
+			}, 1200);
+		} catch (err) {
+			registerMessage.textContent = 'Error: ' + (err.message || 'No se pudo registrar.');
+			registerMessage.style.color = 'red';
+		}
+	});
+}
 
 
 // Delegación de eventos para el enlace de registro (por si se re-renderiza)
@@ -230,13 +388,13 @@ document.addEventListener('click', function(e) {
 });
 
 // Volver a login desde registro
-backLogin.addEventListener('click', () => {
+if (backLogin) backLogin.addEventListener('click', () => {
 	registerForm.classList.add('hidden');
 	loginForm.classList.remove('hidden');
 });
 
 // Selector de idioma (solo visual por ahora)
-langSelect.addEventListener('change', (e) => {
+if (langSelect) langSelect.addEventListener('change', (e) => {
 	// Aquí podrías cambiar los textos según el idioma seleccionado
 	alert('Funcionalidad de cambio de idioma próximamente');
 });

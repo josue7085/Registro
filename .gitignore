@@ -11,11 +11,7 @@ firebase-debug.*.log*
 .firebase/
 
 # Firebase config
-
-# Uncomment this if you'd like others to create their own Firebase project.
-# For a team working on the same Firebase project(s), it is recommended to leave
-# it commented so all members can deploy to the same project(s) in .firebaserc.
-# .firebaserc
+# .firebaserc  ← si no quieres que se suba el config del proyecto, descomenta esta línea
 
 # Runtime data
 pids
@@ -28,20 +24,18 @@ lib-cov
 
 # Coverage directory used by tools like istanbul
 coverage
-
-# nyc test coverage
 .nyc_output
 
-# Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
+# Grunt intermediate storage
 .grunt
 
-# Bower dependency directory (https://bower.io/)
+# Bower dependency directory
 bower_components
 
 # node-waf configuration
 .lock-wscript
 
-# Compiled binary addons (http://nodejs.org/api/addons.html)
+# Compiled binary addons
 build/Release
 
 # Dependency directories
@@ -64,6 +58,18 @@ node_modules/
 
 # dotenv environment variables file
 .env
+.env.*
 
 # dataconnect generated files
 .dataconnect
+
+# ===== Seguridad: claves privadas / credenciales sensibles =====
+*.pem
+*.key
+*.p12
+*.crt
+
+# Service accounts de Firebase / Google Cloud
+serviceAccount*.json
+*-firebase-adminsdk-*.json
+formulario-wifi-flash-firebase-adminsdk-fbsvc-4975d62b32.json

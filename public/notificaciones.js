@@ -58,8 +58,14 @@ function abrirModalNotificacion(idx = null) {
             fecha: fd.get('fecha'),
             destinatario: fd.get('destinatario')
         };
-        if (idx !== null) notificaciones[idx] = nuevaNotif;
-        else notificaciones.push(nuevaNotif);
+        if (idx !== null) {
+            notificaciones[idx] = nuevaNotif;
+            editarNotificacion(notificaciones[idx].id, nuevaNotif);
+        }
+        else {
+            notificaciones.push(nuevaNotif);
+            agregarNotificacion(nuevaNotif);
+        }
         renderTablaNotificaciones();
         cerrarModalNotificacion();
     };
@@ -71,8 +77,10 @@ function cerrarModalNotificacion() {
 
 function eliminarNotificacion(idx) {
     if (confirm('¿Eliminar esta notificación?')) {
+        const id = notificaciones[idx].id;
         notificaciones.splice(idx, 1);
         renderTablaNotificaciones();
+        eliminarNotificacion(id);
     }
 }
 
@@ -80,3 +88,21 @@ document.getElementById('btn-nueva-notificacion').onclick = () => abrirModalNoti
 
 // Inicializar tabla
 renderTablaNotificaciones();
+
+// CRUD Firestore para notificaciones
+function agregarNotificacion(data) {
+  window.firestoreCRUD.add('notificaciones', data)
+    .then(() => alert('Notificación añadida correctamente'))
+    .catch(err => alert('Error al añadir notificación: ' + err.message));
+}
+function editarNotificacion(id, data) {
+  window.firestoreCRUD.update('notificaciones', id, data)
+    .then(() => alert('Notificación actualizada'))
+    .catch(err => alert('Error al actualizar notificación: ' + err.message));
+}
+function eliminarNotificacion(id) {
+  if (!confirm('¿Seguro que deseas eliminar esta notificación?')) return;
+  window.firestoreCRUD.delete('notificaciones', id)
+    .then(() => alert('Notificación eliminada'))
+    .catch(err => alert('Error al eliminar notificación: ' + err.message));
+}

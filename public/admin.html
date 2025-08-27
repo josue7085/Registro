@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Administrador | inter-Flash</title>
     <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
@@ -56,15 +57,40 @@
                 <canvas id="grafica-clientes" height="180"></canvas>
                 <canvas id="grafica-pagos" height="180"></canvas>
             </div>
-            <div id="panel-clientes" style="display:none; margin-top:32px;">
-                <h2>Panel de Clientes</h2>
-                <div class="clientes-busqueda" style="margin-bottom:18px;">
-                    <input type="text" id="busqueda-clientes" placeholder="Buscar por nombre, cédula o IP..." style="width: 60%; padding: 8px 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.18); color: #222; font-size: 1em; box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08); outline: none; transition: box-shadow 0.2s, border 0.2s; backdrop-filter: blur(6px);">
+            <div id="panel-clientes" class="admin-panel" style="display:none; margin-top:32px;">
+            <div id="panel-usuarios" class="admin-panel" style="display:none; margin-top:32px;">
+                <h2>Panel de Usuarios (Admin y Técnico)</h2>
+                <div class="usuarios-busqueda" style="margin-bottom:18px; display: flex; align-items: center; gap: 18px;">
+                    <input type="text" id="busqueda-usuarios" placeholder="Buscar por nombre, cédula o IP..." style="width: 60%; padding: 8px 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.18); color: #222; font-size: 1em; box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08); outline: none; transition: box-shadow 0.2s, border 0.2s; backdrop-filter: blur(6px);">
+                    <span id="contador-usuarios" style="font-weight: bold; color: #333;">Total: 0</span>
                 </div>
                 <table class="tabla-clientes">
                     <thead>
                         <tr>
                             <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Cédula</th>
+                            <th>Rol</th>
+                            <th>IP Asignada</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-usuarios-body">
+                        <!-- Aquí se insertarán las filas dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+                <h2>Panel de Clientes</h2>
+                <button id="btn-nuevo-cliente" class="btn-guardar" style="margin-bottom:18px;">Añadir cliente</button>
+                <div class="clientes-busqueda" style="margin-bottom:18px; display: flex; align-items: center; gap: 18px;">
+                    <input type="text" id="busqueda-clientes" placeholder="Buscar por nombre, cédula o IP..." style="width: 60%; padding: 8px 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.18); color: #222; font-size: 1em; box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08); outline: none; transition: box-shadow 0.2s, border 0.2s; backdrop-filter: blur(6px);">
+                    <span id="contador-clientes" style="font-weight: bold; color: #333;">Total: 0</span>
+                </div>
+                <table class="tabla-clientes">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
                             <th>Cédula</th>
                             <th>IP Asignada</th>
                             <th>Acciones</th>
@@ -84,6 +110,7 @@
                             <th>Nombre</th>
                             <th>Velocidad</th>
                             <th>Precio</th>
+                            <th>Fecha de corte</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -201,7 +228,21 @@
                 </div>
             </div>
         </section>
+    <!-- Modal para motivo de rechazo de pago -->
+    <div id="modal-rechazo-pago" class="modal-cliente" style="display:none;">
+        <div class="modal-content" id="modal-content-rechazo-pago">
+            <h3>Motivo del rechazo</h3>
+            <textarea id="motivo-rechazo-input" rows="3" style="width:100%;margin-bottom:12px;" placeholder="Escribe el motivo del rechazo..."></textarea>
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button id="btn-confirmar-rechazo" class="btn-rechazar">Confirmar rechazo</button>
+                <button id="btn-cancelar-rechazo" class="btn-cancelar">Cancelar</button>
+            </div>
+        </div>
     </div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="datos.js"></script>
     <script src="clientes.js"></script>
     <script src="planes.js"></script>
@@ -209,6 +250,7 @@
     <script src="pagos.js"></script>
     <script src="notificaciones.js"></script>
     <script src="chat.js"></script>
+    <script src="usuarios.js"></script>
     <script src="admin.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
